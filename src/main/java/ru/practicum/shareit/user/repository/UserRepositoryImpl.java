@@ -45,29 +45,28 @@ public class UserRepositoryImpl implements UserRepository {
         if (usersEmail.contains(user.getEmail())) {
             throw new EntityNotFoundException(String.format("Пользователя с %s не существует.", user.getEmail()));
         }
-        User userInMemory = users.get(id);
-        usersEmail.remove(userInMemory.getEmail());
+        User userUpdate = users.get(id);
+        usersEmail.remove(userUpdate.getEmail());
 
-        userInMemory.setName(user.getName());
-        userInMemory.setEmail(user.getEmail());
-        users.put(userInMemory.getId(), userInMemory);
-        usersEmail.add(userInMemory.getEmail());
-        return userInMemory;
+        userUpdate.setName(user.getName());
+        userUpdate.setEmail(user.getEmail());
+        users.put(userUpdate.getId(), userUpdate);
+        usersEmail.add(userUpdate.getEmail());
+        return userUpdate;
     }
 
     @Override
     public User updateUserName(User user, Long id) {
-        User userInMemory = users.get(id);
-
-        userInMemory.setName(user.getName());
-        users.put(userInMemory.getId(), userInMemory);
-        return userInMemory;
+        User userUpdate = users.get(id);
+        userUpdate.setName(user.getName());
+        users.put(userUpdate.getId(), userUpdate);
+        return userUpdate;
     }
 
     @Override
     public User updateUserEmail(User user, Long id) {
         if (usersEmail.contains(user.getEmail())) {
-            throw new EntityNotFoundException(String.format("Пользователя с %s не существует.", user.getEmail()));
+            throw new EntityAlreadyExistException(String.format("Пользователя с %s уже существует.", user.getEmail()));
         }
         User userUpdate = users.get(id);
         usersEmail.remove(userUpdate.getEmail());
