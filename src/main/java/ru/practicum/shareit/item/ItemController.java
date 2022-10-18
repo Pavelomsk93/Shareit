@@ -44,7 +44,7 @@ public class ItemController {
             @RequestHeader("X-Sharer-User-Id") Long userId,
             @RequestBody ItemDto itemDto) {
         Item item = ItemMapper.toItem(itemDto);
-        return ItemMapper.toItemDto(itemService.createItem(item,userId));
+        return ItemMapper.toItemDto(itemService.createItem(item, userId));
     }
 
     @DeleteMapping(value = "/{itemId}")

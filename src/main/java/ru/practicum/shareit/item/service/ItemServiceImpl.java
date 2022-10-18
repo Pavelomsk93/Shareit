@@ -1,6 +1,7 @@
 package ru.practicum.shareit.item.service;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import ru.practicum.shareit.exceptions.EntityNotFoundException;
 import ru.practicum.shareit.exceptions.ValidationException;
@@ -12,6 +13,7 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
+@Slf4j
 public class ItemServiceImpl implements ItemService {
 
     private final ItemRepository itemRepository;
@@ -20,7 +22,8 @@ public class ItemServiceImpl implements ItemService {
 
     @Override
     public List<Item> getAllItems(Long userId) {
-        if(userRepository.findById(userId)==null){
+        if (userRepository.findById(userId) == null) {
+            log.error("User с id {} не существует", userId);
             throw new EntityNotFoundException("Такого пользователя не существует");
         }
         return itemRepository.getAllItem(userId);
@@ -38,11 +41,13 @@ public class ItemServiceImpl implements ItemService {
 
     @Override
     public Item createItem(Item item, Long userId) {
-        if(userRepository.findById(userId)==null){
+        if (userRepository.findById(userId) == null) {
+            log.error("User с id {} не существует", userId);
             throw new EntityNotFoundException("Такого пользователя не существует");
         }
         if (item.getName().isEmpty() || item.getDescription() == null || item.getAvailable() == null) {
-            throw new ValidationException("Данно поле не может быть пустым.");
+            log.error("Данное поле не может быть пустым.");
+            throw new ValidationException("Данное поле не может быть пустым.");
         }
         item.setOwner(userRepository.findById(userId));
         return itemRepository.createItem(item);
@@ -54,21 +59,23 @@ public class ItemServiceImpl implements ItemService {
     }
 
     @Override
-    public Item patchItem(Item item, Long userId, Long id) {
-        if(userRepository.findById(userId)==null){
+    public Item patchItem(Item item, Long userId, Long itemId) {
+        if (userRepository.findById(userId) == null) {
+            log.error("User с id {} не существует", userId);
             throw new EntityNotFoundException("Такого пользователя не существует");
         }
-        if(!(itemRepository.getItemById(id).getOwner().getId()==userId)){
+        if (!(itemRepository.getItemById(itemId).getOwner().getId() == userId)) {
+            log.error("User с id {} не владеет вещью", userId);
             throw new EntityNotFoundException("Пользователь не владеет вещью");
         }
-        if(item.getName()!=null&&item.getDescription()==null&&item.getAvailable()==null){
-            return itemRepository.patchItemName(item,id);
-        } else if(item.getDescription()!=null&&item.getName()==null&&item.getAvailable()==null) {
-            return itemRepository.patchItemDescription(item,id);
-        } else if(item.getAvailable()!=null&&item.getName()==null&&item.getDescription()==null){
-            return itemRepository.patchItemAvailable(item,id);
-        }else{
-            return itemRepository.patchItem(item,id);
+        if (item.getName() != null && item.getDescription() == null && item.getAvailable() == null) {
+            return itemRepository.patchItemName(item, itemId);
+        } else if (item.getDescription() != null && item.getName() == null && item.getAvailable() == null) {
+            return itemRepository.patchItemDescription(item, itemId);
+        } else if (item.getAvailable() != null && item.getName() == null && item.getDescription() == null) {
+            return itemRepository.patchItemAvailable(item, itemId);
+        } else {
+            return itemRepository.patchItem(item, itemId);
         }
     }
 }

@@ -12,9 +12,9 @@ import java.util.List;
 @Service
 @Slf4j
 @RequiredArgsConstructor
-public class UserServiceImpl implements UserService{
+public class UserServiceImpl implements UserService {
 
-    private  final UserRepository userRepository;
+    private final UserRepository userRepository;
 
 
     @Override
@@ -30,9 +30,11 @@ public class UserServiceImpl implements UserService{
     @Override
     public User createUser(User user) {
         if (user.getEmail() == null) {
+            log.error("Email у User с именем {} не может быть пустым", user.getName());
             throw new ValidationException("E-mail не должен быть пустым.");
         }
         if (!user.getEmail().contains("@")) {
+            log.error("Email у User с именем {} должен быть валидным", user.getName());
             throw new ValidationException("Введен некорректный e-mail.");
         }
         return userRepository.save(user);

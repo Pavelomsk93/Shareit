@@ -11,11 +11,11 @@ public interface UserRepository {
 
     User save(User userDto);
 
-    User updateUser(User user,Long id);
+    User updateUser(User user, Long id);
 
-    User updateUserEmail(User user,Long id);
+    User updateUserEmail(User user, Long id);
 
-    User updateUserName(User user,Long id);
+    User updateUserName(User user, Long id);
 
     void delete(Long userId);
 }
