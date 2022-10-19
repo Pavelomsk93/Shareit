@@ -18,12 +18,14 @@ public class UserRepositoryImpl implements UserRepository {
 
     @Override
     public List<User> findAll() {
+        log.info("Все пользователи:");
         return new ArrayList<>(users.values());
     }
 
     @Override
     public User findById(Long userId) {
         if (users.containsKey(userId)) {
+            log.info("Пользователь с id{}",userId);
             return users.get(userId);
         } else {
             log.error("User с id {} не существует", userId);
