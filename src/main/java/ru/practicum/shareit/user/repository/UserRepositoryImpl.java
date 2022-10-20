@@ -25,7 +25,7 @@ public class UserRepositoryImpl implements UserRepository {
     @Override
     public User findById(Long userId) {
         if (users.containsKey(userId)) {
-            log.info("Пользователь с id{}",userId);
+            log.info("Пользователь с id{}", userId);
             return users.get(userId);
         } else {
             log.error("User с id {} не существует", userId);

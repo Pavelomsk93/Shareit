@@ -17,14 +17,14 @@ public class ItemRepositoryImpl implements ItemRepository {
 
     @Override
     public List<Item> getAllItem(Long userId) {
-        log.info("Все вещи пользователя с id {} в списке:",userId);
+        log.info("Все вещи пользователя с id {} в списке:", userId);
         return items.values().stream().filter(f -> f.getOwner().getId() == userId)
                 .collect(Collectors.toList());
     }
 
     @Override
     public Item getItemById(Long itemId) {
-        log.info("Вещь с id {}",itemId);
+        log.info("Вещь с id {}", itemId);
         return items.values().stream().filter(f -> Objects.equals(f.getId(), itemId))
                 .findAny().orElse(null);
     }
