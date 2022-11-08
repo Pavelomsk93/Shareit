@@ -8,13 +8,13 @@ import ru.practicum.shareit.enums.Status;
 import java.time.LocalDateTime;
 import java.util.List;
 
-public interface BookingRepository extends JpaRepository<Booking,Long> {
+public interface BookingRepository extends JpaRepository<Booking, Long> {
 
     List<Booking> findByBookerIdOrderByStartDesc(Long userId);
 
-    List<Booking>  findByBookerIdAndStartAfterOrderByStartDesc(Long userId, LocalDateTime time);
+    List<Booking> findByBookerIdAndStartAfterOrderByStartDesc(Long userId, LocalDateTime time);
 
-    List<Booking> findBookingsByBookerIdAndEndIsBeforeOrderByStartDesc(Long userId,LocalDateTime time);
+    List<Booking> findBookingsByBookerIdAndEndIsBeforeOrderByStartDesc(Long userId, LocalDateTime time);
 
     List<Booking> findBookingsByBookerIdAndStatusOrderByStartDesc(Long userId, Status status);
 
