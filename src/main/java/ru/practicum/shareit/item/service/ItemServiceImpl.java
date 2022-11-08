@@ -94,7 +94,7 @@ public class ItemServiceImpl implements ItemService {
                 .orElseThrow(() -> new EntityNotFoundException(
                         String.format("Пользователя с %s не существует.", userId)));
         if (itemDto.getName().isEmpty() || itemDto.getDescription() == null || itemDto.getAvailable() == null) {
-            throw new ValidationException("Данно поле не может быть пустым.");
+            throw new ValidationException("Данное поле не может быть пустым.");
         }
         Item item = ItemMapper.toItem(itemDto);
         item.setOwner(user);
