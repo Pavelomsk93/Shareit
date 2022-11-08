@@ -139,7 +139,7 @@ public class ItemServiceImpl implements ItemService {
             }
         } else {
             throw new EntityNotFoundException(
-                    String.format("Пользователя с id %s владеет вещью.", userId));
+                    String.format("Пользователя с id  %s владеет вещью.", userId));
         }
     }
 
