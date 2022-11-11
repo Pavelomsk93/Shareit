@@ -1,6 +1,7 @@
 package ru.practicum.shareit.item.service;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.shareit.booking.dto.BookingItemDto;
@@ -30,7 +31,7 @@ import static ru.practicum.shareit.item.mapper.ItemMapper.toItemDtoWithBooking;
 
 @Service
 @RequiredArgsConstructor
-@Transactional(readOnly = true)
+@Slf4j
 public class ItemServiceImpl implements ItemService {
 
     private final ItemRepository itemRepository;
@@ -54,6 +55,7 @@ public class ItemServiceImpl implements ItemService {
             }
         }
         itemsDtoWithBookingList.sort(Comparator.comparing(ItemDtoWithBooking::getId));
+        log.info("Все вещи:");
         return itemsDtoWithBookingList;
     }
 
@@ -72,14 +74,17 @@ public class ItemServiceImpl implements ItemService {
                     .collect(Collectors.toList())
             );
         }
+        log.info("Вещь с id {}:{}", itemId, itemDtoWithBooking);
         return itemDtoWithBooking;
     }
 
     @Override
     public List<ItemDto> getItemSearch(String searchText) {
         if (searchText.isEmpty()) {
+            log.info("Результат поиска :");
             return new ArrayList<>();
         }
+        log.info("Результат поиска :");
         return itemRepository.search(searchText)
                 .stream()
                 .filter(Item::getAvailable)
@@ -94,11 +99,13 @@ public class ItemServiceImpl implements ItemService {
                 .orElseThrow(() -> new EntityNotFoundException(
                         String.format("Пользователя с %s не существует.", userId)));
         if (itemDto.getName().isEmpty() || itemDto.getDescription() == null || itemDto.getAvailable() == null) {
+            log.error("Данное поле не может быть пустым.");
             throw new ValidationException("Данное поле не может быть пустым.");
         }
         Item item = ItemMapper.toItem(itemDto);
         item.setOwner(user);
         Item itemCreate = itemRepository.save(item);
+        log.info("Добавлена вещь с id {}: {}", itemCreate.getId(), itemCreate);
         return ItemMapper.toItemDto(itemCreate);
     }
 
@@ -107,6 +114,7 @@ public class ItemServiceImpl implements ItemService {
     public void removeItemById(Long id) {
         itemRepository.findById(id).orElseThrow(() -> new EntityNotFoundException(
                 String.format("Пользователя с %s не существует.", id)));
+        log.info("Удалена вещь с id {}", id);
         itemRepository.deleteById(id);
     }
 
@@ -121,25 +129,30 @@ public class ItemServiceImpl implements ItemService {
             if (item.getAvailable() != null && item.getName() == null && item.getDescription() == null) {
                 itemUpdate.setAvailable(item.getAvailable());
                 itemRepository.save(itemUpdate);
+                log.info("Обновлена вещь с id {}:{}", itemId, itemUpdate);
                 return ItemMapper.toItemDto(itemUpdate);
             } else if (item.getName() != null && item.getAvailable() == null && item.getDescription() == null) {
                 itemUpdate.setName(item.getName());
                 itemRepository.save(itemUpdate);
+                log.info("Обновлена вещь с id {}:{}", itemId, itemUpdate);
                 return ItemMapper.toItemDto(itemUpdate);
             } else if (item.getDescription() != null && item.getName() == null && item.getAvailable() == null) {
                 itemUpdate.setDescription(item.getDescription());
                 itemRepository.save(itemUpdate);
+                log.info("Обновлена вещь с id {}:{}", itemId, itemUpdate);
                 return ItemMapper.toItemDto(itemUpdate);
             } else {
                 itemUpdate.setName(item.getName());
                 itemUpdate.setDescription(item.getDescription());
                 itemUpdate.setAvailable(item.getAvailable());
                 itemRepository.save(itemUpdate);
+                log.info("Обновлена вещь с id {}:{}", itemId, itemUpdate);
                 return ItemMapper.toItemDto(itemUpdate);
             }
         } else {
+            log.error("Пользователя с id  {} не владеет вещью.", userId);
             throw new EntityNotFoundException(
-                    String.format("Пользователя с id  %s владеет вещью.", userId));
+                    String.format("Пользователя с id  %s не владеет вещью.", userId));
         }
     }
 

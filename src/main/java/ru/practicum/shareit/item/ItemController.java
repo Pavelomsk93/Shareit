@@ -22,7 +22,6 @@ public class ItemController {
 
     @GetMapping
     public List<ItemDtoWithBooking> getItems(@RequestHeader("X-Sharer-User-Id") Long userId) {
-        log.info("GetMapping/Получение всех вещей пользователя с id: " + userId);
         return itemService.getAllItems(userId);
     }
 
@@ -30,13 +29,11 @@ public class ItemController {
     public ItemDtoWithBooking getItemById(
             @RequestHeader("X-Sharer-User-Id") Long userId,
             @PathVariable Long itemId) {
-        log.info("GetMapping/Получение вещи по id: " + itemId);
         return itemService.getItemById(userId, itemId);
     }
 
     @GetMapping(value = "/search")
     public List<ItemDto> getItemSearch(@RequestParam(name = "text") String text) {
-        log.info("GetMapping/Поиск вещи по тексту: " + text);
         return itemService.getItemSearch(text);
     }
 
@@ -44,8 +41,6 @@ public class ItemController {
     public ItemDto createItem(
             @RequestHeader("X-Sharer-User-Id") Long userId,
             @RequestBody ItemDto itemDto) {
-        log.info("PostMapping/Создание вещи:" + itemDto +
-                " пользователя с id: " + userId);
         return itemService.createItem(itemDto, userId);
     }
 
@@ -59,7 +54,6 @@ public class ItemController {
 
     @DeleteMapping(value = "/{itemId}")
     public void removeItem(@PathVariable Long itemId) {
-        log.info("DeleteMapping/Удаление вещи по id: " + itemId);
         itemService.removeItemById(itemId);
     }
 
@@ -68,9 +62,6 @@ public class ItemController {
             @RequestBody ItemDto itemDto,
             @RequestHeader("X-Sharer-User-Id") Long userId,
             @PathVariable Long itemId) {
-        log.info("PatchMapping/Обновление вещи с id: " + itemId +
-                " обновляемая часть: " + itemDto +
-                " пользователь с id: " + userId);
         return itemService.patchItem(itemDto, userId, itemId);
     }
 }

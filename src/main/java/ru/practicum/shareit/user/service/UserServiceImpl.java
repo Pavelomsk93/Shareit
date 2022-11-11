@@ -1,6 +1,7 @@
 package ru.practicum.shareit.user.service;
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.shareit.exceptions.EntityNotFoundException;
@@ -15,7 +16,7 @@ import java.util.List;
 
 @Service
 @RequiredArgsConstructor
-@Transactional(readOnly = true)
+@Slf4j
 public class UserServiceImpl implements UserService {
 
     private final UserRepository userRepository;
@@ -27,11 +28,13 @@ public class UserServiceImpl implements UserService {
             UserDto userDto = UserMapper.toUserDto(user);
             userDtoList.add(userDto);
         }
+        log.info("Все пользователи:");
         return userDtoList;
     }
 
     @Override
     public UserDto getUserById(Long id) {
+        log.info("Пользователь с id {}", id);
         return UserMapper.toUserDto(userRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException(
                         String.format("Пользователь %s не существует.", id))));
@@ -41,13 +44,16 @@ public class UserServiceImpl implements UserService {
     @Transactional
     public UserDto createUser(UserDto userDto) {
         if (userDto.getEmail() == null) {
+            log.error("E-mail не должен быть пустым.");
             throw new ValidationException("E-mail не должен быть пустым.");
         }
         if (!userDto.getEmail().contains("@")) {
+            log.error("Введен некорректный e-mail.");
             throw new ValidationException("Введен некорректный e-mail.");
         }
         User user = UserMapper.toUser(userDto);
         final User userCreate = userRepository.save(user);
+        log.info("Создан пользователь с id {}: {}", userCreate.getId(), userCreate);
         return UserMapper.toUserDto(userCreate);
     }
 
@@ -57,6 +63,7 @@ public class UserServiceImpl implements UserService {
         userRepository.findById(id)
                 .orElseThrow(() -> new EntityNotFoundException(
                         String.format("Пользователь %s не существует.", id)));
+        log.info("Удалён пользователь с id {}", id);
         userRepository.deleteById(id);
     }
 
@@ -70,15 +77,18 @@ public class UserServiceImpl implements UserService {
         if (user.getEmail() != null && user.getName() == null) {
             userUpdate.setEmail(user.getEmail());
             userRepository.save(userUpdate);
+            log.info("Обновлён пользователь с id {}: {}", id, userUpdate);
             return UserMapper.toUserDto(userUpdate);
         } else if (user.getName() != null && user.getEmail() == null) {
             userUpdate.setName(user.getName());
             userRepository.save(userUpdate);
+            log.info("Обновлён пользователь с id {}: {}", id, userUpdate);
             return UserMapper.toUserDto(userUpdate);
         } else {
             userUpdate.setName(user.getName());
             userUpdate.setEmail(user.getEmail());
             userRepository.save(userUpdate);
+            log.info("Обновлён пользователь с id {}: {}", id, userUpdate);
             return UserMapper.toUserDto(userUpdate);
         }
     }

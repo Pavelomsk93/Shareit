@@ -2,6 +2,7 @@ package ru.practicum.shareit.item.service;
 
 
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.practicum.shareit.booking.repository.BookingRepository;
@@ -22,7 +23,7 @@ import java.time.LocalDateTime;
 
 @Service
 @RequiredArgsConstructor
-@Transactional(readOnly = true)
+@Slf4j
 public class CommentServiceImpl implements CommentService {
 
     private final CommentRepository commentRepository;
@@ -34,12 +35,14 @@ public class CommentServiceImpl implements CommentService {
     @Transactional
     public CommentDto createComment(CommentDto commentDto, Long itemId, Long userId) {
         if (commentDto.getText().isBlank()) {
+            log.error("Комментарий не может быть пустым.");
             throw new ValidationException("Комментарий не может быть пустым.");
         }
         boolean bookingBoolean = bookingRepository
                 .searchBookingByBookerIdAndItemIdAndEndIsBefore(userId, itemId, LocalDateTime.now())
                 .stream().noneMatch(booking -> booking.getStatus().equals(Status.APPROVED));
         if (bookingBoolean) {
+            log.error("Пользователь {} не брал в аренду вещь {}", userId, itemId);
             throw new BookingException(String.format("Пользователь %s не брал в аренду вещь %d", userId, itemId));
         }
 
@@ -55,6 +58,7 @@ public class CommentServiceImpl implements CommentService {
         comment.setAuthor(user);
         comment.setCreated(LocalDateTime.now());
         Comment commentSave = commentRepository.save(comment);
+        log.info("Оставлен коментарий с id {}: {}", commentSave.getId(), commentSave);
         return CommentMapper.toCommentDto(commentSave);
     }
 }

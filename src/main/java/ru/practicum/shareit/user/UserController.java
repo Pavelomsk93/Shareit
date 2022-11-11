@@ -21,25 +21,21 @@ public class UserController {
 
     @GetMapping
     public List<UserDto> getAllUsers() {
-        log.info("GetMapping/Получение всех пользователей");
         return userService.getAllUsers();
     }
 
     @GetMapping(value = "/{id}")
     public UserDto getUserById(@PathVariable Long id) {
-        log.info("GetMapping/Получение пользователя по id: " + id);
         return userService.getUserById(id);
     }
 
     @PostMapping
     public UserDto createUser(@Valid @RequestBody UserDto userDto) {
-        log.info("PostMapping/Создание пользователя: " + userDto);
         return userService.createUser(userDto);
     }
 
     @DeleteMapping(value = "/{id}")
     public void removeUser(@PathVariable Long id) {
-        log.info("DeleteMapping/Удаление пользователя по id: " + id);
         userService.removeUser(id);
     }
 
@@ -48,8 +44,6 @@ public class UserController {
             @Valid
             @RequestBody UserDto userDto,
             @PathVariable Long id) {
-        log.info("PatchMapping/Обновление пользователя с id: " + id +
-                " обновляемая часть: " + userDto);
         return userService.patchUser(userDto, id);
     }
 }
