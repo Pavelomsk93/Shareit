@@ -231,7 +231,7 @@ public class BookingServiceImpl implements BookingService {
         if (item.getAvailable()) {
             booking.setItem(item);
             Booking bookingCreate = bookingRepository.save(booking);
-            log.info("Создан пользователь {}", bookingCreate);
+            log.info("Создан пользователь: {} ", bookingCreate);
             return BookingMapper.toBookingDto(bookingCreate);
         } else {
             log.error("Вещь {} не доступна для бронирования.", item.getId());
