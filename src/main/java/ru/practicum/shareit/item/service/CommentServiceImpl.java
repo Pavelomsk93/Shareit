@@ -21,6 +21,7 @@ import ru.practicum.shareit.user.repository.UserRepository;
 
 import java.time.LocalDateTime;
 
+
 @Service
 @RequiredArgsConstructor
 @Slf4j
@@ -35,30 +36,28 @@ public class CommentServiceImpl implements CommentService {
     @Transactional
     public CommentDto createComment(CommentDto commentDto, Long itemId, Long userId) {
         if (commentDto.getText().isBlank()) {
-            log.error("Комментарий не может быть пустым.");
             throw new ValidationException("Комментарий не может быть пустым.");
         }
         boolean bookingBoolean = bookingRepository
                 .searchBookingByBookerIdAndItemIdAndEndIsBefore(userId, itemId, LocalDateTime.now())
                 .stream().noneMatch(booking -> booking.getStatus().equals(Status.APPROVED));
         if (bookingBoolean) {
-            log.error("Пользователь {} не брал в аренду вещь {}", userId, itemId);
-            throw new BookingException(String.format("Пользователь %s не брал в аренду вещь %d", userId, itemId));
+            throw new BookingException(String.format("Пользователь %s не брал в аренду вещь %d.", userId, itemId));
         }
 
         User user = userRepository.findById(userId)
                 .orElseThrow(() -> new EntityNotFoundException(
-                        String.format("Пользователя с %s не существует.", userId)));
+                        String.format("Пользователь %s не существует.", userId)));
         Item item = itemRepository.findById(itemId)
                 .orElseThrow(() -> new EntityNotFoundException(
-                        String.format("Вещь с %s не существует.", itemId)));
+                        String.format("Вещь %s не существует.", itemId)));
 
         Comment comment = CommentMapper.toComment(commentDto);
         comment.setItem(item);
         comment.setAuthor(user);
         comment.setCreated(LocalDateTime.now());
         Comment commentSave = commentRepository.save(comment);
-        log.info("Оставлен коментарий с id {}: {}", commentSave.getId(), commentSave);
+        log.info("Добавлен комментарий {}:", commentSave);
         return CommentMapper.toCommentDto(commentSave);
     }
 }
