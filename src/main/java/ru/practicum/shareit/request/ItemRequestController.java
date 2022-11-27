@@ -21,14 +21,14 @@ public class ItemRequestController {
     }
 
     @GetMapping(value = "/{requestId}")
-    private ItemRequestWithItemDto getItemRequestById(
+    public ItemRequestWithItemDto getItemRequestById(
             @RequestHeader("X-Sharer-User-Id") Long userId,
             @PathVariable Long requestId) {
         return itemRequestService.getItemRequestById(userId, requestId);
     }
 
     @GetMapping(value = "/all")
-    private List<ItemRequestWithItemDto> getItemRequestOtherUsers(
+    public List<ItemRequestWithItemDto> getItemRequestOtherUsers(
             @RequestHeader("X-Sharer-User-Id") Long userId,
             @RequestParam(name = "from", defaultValue = "0") int from,
             @RequestParam(name = "size", defaultValue = "20") int size) {

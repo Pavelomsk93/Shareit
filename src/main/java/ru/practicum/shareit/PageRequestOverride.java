@@ -7,7 +7,7 @@ public class PageRequestOverride extends PageRequest {
 
     private final int from;
 
-    protected PageRequestOverride(int from, int size, Sort sort) {
+    public PageRequestOverride(int from, int size, Sort sort) {
         super(from / size, size, sort);
         this.from = from;
     }
