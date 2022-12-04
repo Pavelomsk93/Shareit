@@ -4,6 +4,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import ru.practicum.shareit.PageRequestOverride;
 import ru.practicum.shareit.booking.dto.BookingItemDto;
 import ru.practicum.shareit.booking.model.Booking;
 import ru.practicum.shareit.booking.repository.BookingRepository;
@@ -40,8 +41,15 @@ public class ItemServiceImpl implements ItemService {
     private final CommentRepository commentRepository;
 
     @Override
-    public List<ItemDtoWithBooking> getAllItems(Long userId) {
-        List<ItemDtoWithBooking> itemsDtoWithBookingList = itemRepository.findAll().stream()
+    public List<ItemDtoWithBooking> getAllItems(Long userId, int from, int size) {
+        if (from < 0 || size <= 0) {
+            log.error("Переданы некорректные значения from и/или size");
+            throw new ValidationException("Переданы некорректные значения from и/или size");
+        }
+        PageRequestOverride pageRequest = PageRequestOverride.of(from, size);
+
+        List<ItemDtoWithBooking> itemsDtoWithBookingList = itemRepository.findAll(pageRequest)
+                .stream()
                 .filter(item -> item.getOwner().getId().equals(userId))
                 .map(ItemMapper::toItemDtoWithBooking)
                 .collect(Collectors.toList());
@@ -55,14 +63,16 @@ public class ItemServiceImpl implements ItemService {
             }
         }
         itemsDtoWithBookingList.sort(Comparator.comparing(ItemDtoWithBooking::getId));
-        log.info("Все вещи:");
+        log.info("Все бронирования:");
         return itemsDtoWithBookingList;
     }
 
     @Override
     public ItemDtoWithBooking getItemById(Long userId, Long itemId) {
-        Item item = itemRepository.findById(itemId).orElseThrow(() -> new EntityNotFoundException(
-                String.format("Вещь %s не существует.", itemId)));
+        Item item = itemRepository.findById(itemId)
+                .orElseThrow(() -> new EntityNotFoundException(
+                        String.format("Вещь %s не существует.", itemId)));
+
         ItemDtoWithBooking itemDtoWithBooking = toItemDtoWithBooking(item);
         if (item.getOwner().getId().equals(userId)) {
             createLastAndNextBooking(itemDtoWithBooking);
@@ -74,18 +84,24 @@ public class ItemServiceImpl implements ItemService {
                     .collect(Collectors.toList())
             );
         }
-        log.info("Вещь с id {}:{}", itemId, itemDtoWithBooking);
+        log.info("Вещь {}", itemId);
         return itemDtoWithBooking;
     }
 
     @Override
-    public List<ItemDto> getItemSearch(String searchText) {
-        if (searchText.isEmpty()) {
-            log.info("Результат поиска :");
+    public List<ItemDto> getItemSearch(String text, int from, int size) {
+        if (from < 0 || size <= 0) {
+            log.error("Переданы некорректные значения from и/или size");
+            throw new ValidationException("Переданы некорректные значения from и/или size");
+        }
+        PageRequestOverride pageRequest = PageRequestOverride.of(from, size);
+
+        if (text.isEmpty()) {
+            log.info("Результат поиска: ");
             return new ArrayList<>();
         }
-        log.info("Результат поиска :");
-        return itemRepository.search(searchText)
+        log.info("Результат поиска: ");
+        return itemRepository.search(text, pageRequest)
                 .stream()
                 .filter(Item::getAvailable)
                 .map(ItemMapper::toItemDto)
@@ -95,25 +111,26 @@ public class ItemServiceImpl implements ItemService {
     @Override
     @Transactional
     public ItemDto createItem(ItemDto itemDto, Long userId) {
-        User user = userRepository.findById(userId)
-                .orElseThrow(() -> new EntityNotFoundException(
-                        String.format("Пользователя с %s не существует.", userId)));
-        if (itemDto.getName().isEmpty() || itemDto.getDescription() == null || itemDto.getAvailable() == null) {
+        if (itemDto.getName().isBlank() || itemDto.getDescription() == null || itemDto.getAvailable() == null) {
             log.error("Данное поле не может быть пустым.");
             throw new ValidationException("Данное поле не может быть пустым.");
         }
+        User user = userRepository.findById(userId)
+                .orElseThrow(() -> new EntityNotFoundException(
+                        String.format("Пользователь %s не существует.", userId)));
         Item item = ItemMapper.toItem(itemDto);
         item.setOwner(user);
+        if (itemDto.getRequestId() != null) {
+            item.setRequestId(itemDto.getRequestId());
+        }
         Item itemCreate = itemRepository.save(item);
-        log.info("Добавлена вещь с id {}: {}", itemCreate.getId(), itemCreate);
+        log.info("Добавлена вещь:{}", itemCreate);
         return ItemMapper.toItemDto(itemCreate);
     }
 
     @Override
     @Transactional
     public void removeItemById(Long id) {
-        itemRepository.findById(id).orElseThrow(() -> new EntityNotFoundException(
-                String.format("Пользователя с %s не существует.", id)));
         log.info("Удалена вещь с id {}", id);
         itemRepository.deleteById(id);
     }
@@ -124,35 +141,35 @@ public class ItemServiceImpl implements ItemService {
         Item item = ItemMapper.toItem(itemDto);
         final Item itemUpdate = itemRepository.findById(itemId)
                 .orElseThrow(() -> new EntityNotFoundException(
-                        String.format("Вещь с id %s не существует.", itemId)));
+                        String.format("Вещь %s не существует.", itemId)));
         if (itemUpdate.getOwner().getId().equals(userId)) {
             if (item.getAvailable() != null && item.getName() == null && item.getDescription() == null) {
                 itemUpdate.setAvailable(item.getAvailable());
                 itemRepository.save(itemUpdate);
-                log.info("Обновлена вещь с id {}:{}", itemId, itemUpdate);
+                log.info("Обновлена вещь {}", itemUpdate);
                 return ItemMapper.toItemDto(itemUpdate);
             } else if (item.getName() != null && item.getAvailable() == null && item.getDescription() == null) {
                 itemUpdate.setName(item.getName());
                 itemRepository.save(itemUpdate);
-                log.info("Обновлена вещь с id {}:{}", itemId, itemUpdate);
+                log.info("Обновлена вещь {}", itemUpdate);
                 return ItemMapper.toItemDto(itemUpdate);
             } else if (item.getDescription() != null && item.getName() == null && item.getAvailable() == null) {
                 itemUpdate.setDescription(item.getDescription());
                 itemRepository.save(itemUpdate);
-                log.info("Обновлена вещь с id {}:{}", itemId, itemUpdate);
+                log.info("Обновлена вещь {}", itemUpdate);
                 return ItemMapper.toItemDto(itemUpdate);
             } else {
                 itemUpdate.setName(item.getName());
                 itemUpdate.setDescription(item.getDescription());
                 itemUpdate.setAvailable(item.getAvailable());
                 itemRepository.save(itemUpdate);
-                log.info("Обновлена вещь с id {}:{}", itemId, itemUpdate);
+                log.info("Обновлена вещь {}", itemUpdate);
                 return ItemMapper.toItemDto(itemUpdate);
             }
         } else {
-            log.error("Пользователя с id  {} не владеет вещью.", userId);
+            log.error("Пользователь {} не владеет вещью.", userId);
             throw new EntityNotFoundException(
-                    String.format("Пользователя с id  %s не владеет вещью.", userId));
+                    String.format("Пользователь %s не владеет вещью.", userId));
         }
     }
 
