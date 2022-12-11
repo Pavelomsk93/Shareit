@@ -53,7 +53,7 @@ public class ItemController {
             @RequestBody ItemDto itemDto) {
 
         if (itemDto.getName().isBlank() || itemDto.getDescription() == null || itemDto.getAvailable() == null) {
-            throw new ValidationException("Данное поле не может быть пустым.");
+            throw new ValidationException("Одно из этих полей не может быть пустым.");
         }
         return itemClient.createItem(itemDto, userId);
     }

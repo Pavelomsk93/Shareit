@@ -10,6 +10,8 @@ import ru.practicum.shareit.exception.BookingException;
 import ru.practicum.shareit.exception.ValidationException;
 
 import javax.validation.Valid;
+import javax.validation.constraints.Positive;
+import javax.validation.constraints.PositiveOrZero;
 import java.time.LocalDateTime;
 
 @RestController
@@ -23,8 +25,8 @@ public class BookingController {
     public ResponseEntity<Object> getAllBookings(
             @RequestHeader("X-Sharer-User-Id") Long userId,
             @RequestParam(name = "state", defaultValue = "ALL") String stateParam,
-            @RequestParam(name = "from", defaultValue = "0") int from,
-            @RequestParam(name = "size", defaultValue = "20") int size) {
+            @RequestParam(name = "from", defaultValue = "0") @PositiveOrZero int from,
+            @RequestParam(name = "size", defaultValue = "20") @Positive int size) {
         Status state = Status.from(stateParam)
                 .orElseThrow(() -> new IllegalArgumentException("Unknown state: " + stateParam));
         if (from < 0 || size <= 0) {
