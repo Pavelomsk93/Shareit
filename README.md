@@ -24,14 +24,12 @@
 
 ```java
 
-    @GetMapping(value = "/owner")
-    public List<BookingDto> getAllBookingItemsUser(
+        @GetMapping
+    public List<BookingDto> getAllBookings(
             @RequestHeader("X-Sharer-User-Id") Long userId,
             @RequestParam(name = "state", defaultValue = "ALL") String stateParam,
             @RequestParam(name = "from", defaultValue = "0") int from,
             @RequestParam(name = "size", defaultValue = "20") int size) {
-
-        log.info("GetMapping/Получение всех бронирований для вещей пользователя с id: " + userId);
-        return bookingService.getAllBookingItemsUser(userId, stateParam, from, size);
+        return bookingService.getAllBookings(userId, stateParam, from, size);
     }
 ```
